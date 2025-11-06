@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline Notepad</title>
+  <style>
+    body {
+      margin: 0;
+      background: #f4f4f4;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      background: #333;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      font-size: 1.2em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    button {
+      background: #4caf50;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    textarea {
+      flex: 1;
+      padding: 15px;
+      border: none;
+      resize: none;
+      font-size: 1em;
+      line-height: 1.5em;
+      outline: none;
+      background: #fff;
+      color: #222;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span>📝 Offline Notepad</span>
+    <button id="saveBtn">💾 Save Notes</button>
+  </header>
+
+  <textarea id="note" placeholder="Start typing your notes here..."></textarea>
+
+  <script>
+    const textarea = document.getElementById('note');
+    const saveBtn = document.getElementById('saveBtn');
+
+    // Restore unsaved notes (session-only)
+    if (sessionStorage.getItem('tempNote')) {
+      textarea.value = sessionStorage.getItem('tempNote');
+    }
+
+    textarea.addEventListener('input', () => {
+      sessionStorage.setItem('tempNote', textarea.value);
+    });
+
+    function downloadNotes() {
+      const text = textarea.value.trim();
+      if (!text) {
+        alert("Nothing to save.");
+        return;
+      }
+      const blob = new Blob([text], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      const timestamp = new Date().toISOString().slice(0,19).replace(/[:T]/g, '-');
+      a.download = `notes-${timestamp}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    saveBtn.addEventListener('click', downloadNotes);
+
+    window.addEventListener('beforeunload', (event) => {
+      const text = textarea.value.trim();
+      if (text) {
+        downloadNotes();
+      }
+      event.returnValue = '';
+    });
+  </script>
+</body>
+</html>
