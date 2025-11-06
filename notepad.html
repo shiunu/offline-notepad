@@ -22,8 +22,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 10px;
     }
-    button {
+    button, label {
       background: #4caf50;
       border: none;
       color: white;
@@ -32,8 +33,11 @@
       cursor: pointer;
       font-size: 0.9em;
     }
-    button:hover {
+    button:hover, label:hover {
       background: #45a049;
+    }
+    input[type="file"] {
+      display: none;
     }
     textarea {
       flex: 1;
@@ -51,7 +55,11 @@
 <body>
   <header>
     <span>📝 Offline Notepad</span>
-    <button id="saveBtn">💾 Save Notes</button>
+    <div>
+      <label for="loadFile">📂 Open File</label>
+      <input type="file" id="loadFile" accept=".txt" />
+      <button id="saveBtn">💾 Save Notes</button>
+    </div>
   </header>
 
   <textarea id="note" placeholder="Start typing your notes here..."></textarea>
@@ -59,8 +67,9 @@
   <script>
     const textarea = document.getElementById('note');
     const saveBtn = document.getElementById('saveBtn');
+    const loadInput = document.getElementById('loadFile');
 
-    // Restore unsaved notes (session-only)
+    // Restore unsaved text (session only)
     if (sessionStorage.getItem('tempNote')) {
       textarea.value = sessionStorage.getItem('tempNote');
     }
@@ -87,6 +96,19 @@
 
     saveBtn.addEventListener('click', downloadNotes);
 
+    // Load .txt file
+    loadInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        textarea.value = event.target.result;
+        sessionStorage.setItem('tempNote', textarea.value);
+      };
+      reader.readAsText(file);
+    });
+
+    // Auto-download on tab close
     window.addEventListener('beforeunload', (event) => {
       const text = textarea.value.trim();
       if (text) {
