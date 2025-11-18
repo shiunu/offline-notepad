@@ -5,40 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Offline Notepad</title>
   <style>
+    :root {
+      --bg: #f4f4f4;
+      --fg: #222;
+      --header-bg: #333;
+      --header-fg: #fff;
+      --button-bg: #4caf50;
+      --button-fg: #fff;
+    }
+
+    /* Dark theme variables */
+    .dark {
+      --bg: #121212;
+      --fg: #e3e3e3;
+      --header-bg: #000;
+      --header-fg: #fff;
+      --button-bg: #6a4caf;
+      --button-fg: #fff;
+    }
+
     body {
       margin: 0;
-      background: #f4f4f4;
+      background: var(--bg);
+      color: var(--fg);
       font-family: sans-serif;
       display: flex;
       flex-direction: column;
       height: 100vh;
+      transition: background 0.2s, color 0.2s;
     }
+
     header {
-      background: #333;
-      color: white;
+      background: var(--header-bg);
+      color: var(--header-fg);
       padding: 10px;
-      text-align: center;
       font-size: 1.2em;
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 10px;
     }
+
     button, label {
-      background: #4caf50;
+      background: var(--button-bg);
+      color: var(--button-fg);
       border: none;
-      color: white;
       padding: 6px 12px;
       border-radius: 4px;
       cursor: pointer;
       font-size: 0.9em;
     }
     button:hover, label:hover {
-      background: #45a049;
+      opacity: 0.9;
     }
+
     input[type="file"] {
       display: none;
     }
+
     textarea {
       flex: 1;
       padding: 15px;
@@ -47,15 +71,18 @@
       font-size: 1em;
       line-height: 1.5em;
       outline: none;
-      background: #fff;
-      color: #222;
+      background: var(--bg);
+      color: var(--fg);
+      transition: background 0.2s, color 0.2s;
     }
   </style>
 </head>
+
 <body>
   <header>
     <span>📝 Offline Notepad</span>
-    <div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <button id="themeToggle">🌙 Dark Mode</button>
       <label for="loadFile">📂 Open File</label>
       <input type="file" id="loadFile" accept=".txt" />
       <button id="saveBtn">💾 Save Notes</button>
@@ -68,8 +95,9 @@
     const textarea = document.getElementById('note');
     const saveBtn = document.getElementById('saveBtn');
     const loadInput = document.getElementById('loadFile');
+    const themeToggle = document.getElementById('themeToggle');
 
-    // Restore unsaved text (session only)
+    // Restore autosaved text from the session
     if (sessionStorage.getItem('tempNote')) {
       textarea.value = sessionStorage.getItem('tempNote');
     }
@@ -96,10 +124,11 @@
 
     saveBtn.addEventListener('click', downloadNotes);
 
-    // Load .txt file
+    // Load .txt back into the editor
     loadInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
+
       const reader = new FileReader();
       reader.onload = (event) => {
         textarea.value = event.target.result;
@@ -108,13 +137,22 @@
       reader.readAsText(file);
     });
 
+    // Dark/Light mode toggle
+    let darkMode = false;
+
+    themeToggle.addEventListener('click', () => {
+      darkMode = !darkMode;
+      document.body.classList.toggle('dark', darkMode);
+      themeToggle.textContent = darkMode ? "☀️" : "🌙";
+    });
+
     // Auto-download on tab close
     window.addEventListener('beforeunload', (event) => {
       const text = textarea.value.trim();
       if (text) {
         downloadNotes();
       }
-      event.returnValue = '';
+      event.returnValue = "";
     });
   </script>
 </body>
